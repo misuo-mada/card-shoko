@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ミステリー証拠カードメーカー</title>
+  <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=DM+Serif+Display&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: #111;
+      color: #eee;
+      font-family: 'Special Elite', cursive;
+      text-align: center;
+      padding: 20px;
+    }
+    canvas {
+      border: 4px solid #444;
+      margin-top: 20px;
+      background: #f9f3e5;
+      box-shadow: 0 0 20px rgba(0,0,0,0.6);
+    }
+    textarea, input, button {
+      margin: 10px;
+      font-size: 16px;
+      padding: 8px;
+      font-family: inherit;
+    }
+    .theme-buttons button {
+      background: #222;
+      color: #fff;
+      border: 2px solid #666;
+      margin: 4px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>🕵️‍♀️ ミステリー証拠カードメーカー</h1>
+
+  <input type="file" id="imageUpload" accept="image/*"><br>
+  <textarea id="description" rows="5" cols="40" placeholder="説明文を入力（改行OK）"></textarea><br>
+
+  <div class="theme-buttons">
+    <button onclick="setTheme('classic')">デザイン①</button>
+    <button onclick="setTheme('detective')">デザイン②</button>
+    <button onclick="setTheme('report')">デザイン③</button>
+  </div>
+
+  <button onclick="generateCard()">カードを作成</button>
+  <button onclick="downloadCard()">ダウンロード</button><br>
+
+  <canvas id="cardCanvas" width="400" height="600"></canvas>
+
+  <script>
+    const canvas = document.getElementById('cardCanvas');
+    const ctx = canvas.getContext('2d');
+    let uploadedImage = null;
+    let currentTheme = 'classic';
+
+    document.getElementById('imageUpload').addEventListener('change', function(e) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const img = new Image();
+        img.onload = function() {
+          uploadedImage = img;
+          generateCard();
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    });
+
+    function setTheme(theme) {
+      currentTheme = theme;
+      generateCard();
+    }
+
+    function generateCard() {
+      // 背景
+      switch (currentTheme) {
+        case 'classic':
+          ctx.fillStyle = '#f9f3e5';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.strokeStyle = '#4b3621';
+          ctx.lineWidth = 4;
+          ctx.strokeRect(0, 0, canvas.width, canvas.height);
+          ctx.font = '18px "Special Elite"';
+          ctx.fillStyle = '#3e2f1c';
+          break;
+
+        case 'detective':
+          ctx.fillStyle = '#1a1a1a';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.strokeStyle = '#a00';
+          ctx.lineWidth = 3;
+          ctx.strokeRect(0, 0, canvas.width, canvas.height);
+          ctx.font = '18px "Share Tech Mono"';
+          ctx.fillStyle = '#ff4c4c';
+          break;
+
+        case 'report':
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.strokeStyle = '#000';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(0, 0, canvas.width, canvas.height);
+          ctx.font = '16px "DM Serif Display"';
+          ctx.fillStyle = '#333';
+          break;
+      }
+
+      // 証拠画像
+      if (uploadedImage) {
+        ctx.drawImage(uploadedImage, 50, 30, 300, 300);
+      }
+
+      // テキスト描画
+      const text = document.getElementById('description').value;
+      const lines = text.split('\n');
+      const startY = 360;
+      const lineHeight = 26;
+      ctx.textAlign = 'center';
+
+      lines.forEach((line, i) => {
+        ctx.fillText(line, canvas.width / 2, startY + i * lineHeight);
+      });
+
+      // テーマに応じたフッター
+      if (currentTheme === 'classic') {
+        ctx.font = '16px "Special Elite"';
+        ctx.fillText(`証拠ID: E-${Math.floor(Math.random() * 900 + 100)}`, 80, 580);
+        ctx.fillText('🕵️ 鑑識課', 320, 580);
+      } else if (currentTheme === 'detective') {
+        ctx.font = '14px "Share Tech Mono"';
+        ctx.fillText('[CONFIDENTIAL]', 200, 580);
+      } else if (currentTheme === 'report') {
+        ctx.font = '14px "DM Serif Display"';
+        ctx.fillText('調査報告：No. ' + (Math.floor(Math.random() * 999) + 1), 200, 580);
+      }
+    }
+
+    function downloadCard() {
+      const link = document.createElement('a');
+      link.download = 'mystery_card.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    }
+  </script>
+</body>
+</html>
